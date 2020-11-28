@@ -1,0 +1,2 @@
+# Virtual-Mouse-sing-hand-gesture-recognition
+I am proposing virtual mouse application by using hand gesture recognition captured from a webcam through a colour detection technique. In this proposed virtual mouse application, the user will be allowed to control some of the computer cursor functions using their hand baring colour caps or tapes on fingertips. Primarily the user can perform left clicks, right clicks, left double clicks and drag and drop a file in a folder with free cursor movement.
