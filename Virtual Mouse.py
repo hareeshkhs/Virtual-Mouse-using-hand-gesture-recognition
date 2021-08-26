@@ -1,16 +1,29 @@
+# importing the modules
 import cv2
 import numpy as np
 import math
+#Library with mouse functions
 import pyautogui
+#For controlling Mouse
 from pynput.mouse import Button, Controller
 from datetime import datetime
 mouse = Controller()
 pyautogui.FAILSAFE = False
 sx, sy = 1366, 768
+
+# set Width and Height of output Screen
 framex , framey = 640, 480
+
+# capturing Video from Webcam
 cap = cv2.VideoCapture(0)
+
+# set Width and Height
+# Id 3 for Width
+# Id 4 for Height
 cap.set(3, framex)
 cap.set(4, framey)
+
+# set brightness, id is 10
 cap.set(10, 150)
 old = [0, 0]
 cursor=0
@@ -18,19 +31,28 @@ drag=0
 rightclick=0
 leftdouble=0
 oldt = datetime.strptime('2015-01-01 01:00:00', '%Y-%m-%d %H:%M:%S')
+
+# object color values In HSV Format
 mycolors = [[95, 153, 0, 127, 255, 255],
             [25, 52, 72, 102, 255, 255],
             [0, 199, 186, 255, 255, 255]]
+
+# color values which will be used to paint in BGR Format
 mycolorvalues = [[255, 0, 0],
                  [0, 255, 0],
                  [0, 165, 255]]
 mycolortext = ["BLUE","GREEN","ORANGE"]
 
+# function to pick color of object
 def findcolor(img, mycolors, mycolorvalues, mycolortext):
+            
+    # converting the image to HSV format
     imgHSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     count = 0
     l1 = []
     width = []
+    
+    # running for loop to work with all colors
     for color in mycolors:
         lo = np.array(color[0:3])
         up = np.array(color[3:6])
@@ -42,6 +64,8 @@ def findcolor(img, mycolors, mycolorvalues, mycolortext):
         mask1 = cv2.dilate(erode, kernal)
         res = cv2.bitwise_and(img, img, mask=mask1)
         x, y, wid = getContours(img, mask1, count, mycolorvalues, mycolortext)
+        
+        # making the circles
         cv2.circle(img, (x, y), 5, (0, 0, 255), cv2.FILLED)
         count += 1
         # cv2.imshow("image",img)
@@ -120,7 +144,7 @@ def findcolor(img, mycolors, mycolorvalues, mycolortext):
         signcen = 0
     return c1, c2, signbg, signbo, signog, signcen
 
-
+# contours function used to improve accuracy of paint
 def getContours(imgResult, img, count, mycolorvalues, mycolortext):
     x, y, w, h = 0, 0, 0, 0
     contours, hierarchy = cv2.findContours(img,
@@ -130,6 +154,8 @@ def getContours(imgResult, img, count, mycolorvalues, mycolortext):
     max_area = 0
     max_index = -1
     i = 0
+            
+    # working with contours
     while (i < l):
         area = cv2.contourArea(contours[i])
         if (area > max_area):
@@ -138,20 +164,26 @@ def getContours(imgResult, img, count, mycolorvalues, mycolortext):
         i += 1
     if (l > 0):
         if (max_area > 500):
+            
+            #drawing the rectagle around the objects
             x, y, w, h = cv2.boundingRect(contours[max_index])
             imgResult = cv2.rectangle(imgResult, (x, y),
                                       (x + w, y + h),
                                       (mycolorvalues[count]), 2)
 
             cv2.putText(imgResult, mycolortext[count], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (mycolorvalues[count]))
-
+            
+    # Returning Center Coordinates of Rectangle and Side value
     return x + w // 2, y + h // 2, w
 
-
+# running infinite while loop so that
+# program keep running untill we close it
 while True:
     succuss, img = cap.read()
     imgResult = img.copy()
     new = []
+
+    # finding the colors for the points
     x, y, sign, signbo, signog, signcen = findcolor(img, mycolors, mycolorvalues, mycolortext)
     print("px:", x, "py:", y, "sign:", sign, "signbo:", signbo, "signog:", signog, "signcen:", signcen)
     new.append(x)
@@ -197,7 +229,12 @@ while True:
         mouse.press(Button.left)
         drag = drag+1
     old = new
+
+    # displaying output on Screen
     cv2.imshow("Result", img)
+
+    # condition to break programs execution
+    # press q to stop the execution of program
     if cv2.waitKey(1) & 0xFF == ord('q'):
         cap.release()
         cv2.destroyAllWindows()
